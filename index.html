@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>冀C零售数据看板</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; max-width: 860px; margin: 0 auto; padding: 40px 24px 60px; color: #1F2937; background: #F9FAFB; }
+  .head { margin-bottom: 28px; }
+  h1 { font-size: 26px; margin: 0 0 10px; letter-spacing: -0.5px; }
+  .meta { color: #6B7280; font-size: 13px; line-height: 1.8; }
+  .meta b { color: #2563EB; }
+  .card { display: block; padding: 20px 24px; margin-bottom: 12px; border: 1px solid #E5E7EB; border-radius: 10px; text-decoration: none; color: #1F2937; background: #fff; transition: all .16s; }
+  .card:hover { border-color: #3B82F6; box-shadow: 0 6px 18px rgba(59,130,246,.10); transform: translateY(-2px); }
+  .card h3 { margin: 0 0 6px; font-size: 16px; color: #2563EB; display: flex; align-items: center; gap: 8px; }
+  .card p { margin: 0; font-size: 13px; color: #6B7280; line-height: 1.6; }
+  .badge { display: inline-block; background: #DBEAFE; color: #1E40AF; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .badge.new { background: #DCFCE7; color: #166534; }
+  .foot { margin-top: 32px; padding-top: 20px; border-top: 1px solid #E5E7EB; color: #9CA3AF; font-size: 12px; line-height: 1.8; }
+</style>
+</head>
+<body>
+  <div class="head">
+    <h1>📊 冀C零售数据看板</h1>
+    <div class="meta">
+      数据范围：<b>2026年9月1日 — 9月19日</b> · 覆盖 <b>24家</b>冀C门店<br>
+      数据来源：华北Q3季度日清收集表（店长每日提报）
+    </div>
+  </div>
+
+  <a class="card" href="weekly.html">
+    <h3>9月周切换看板 <span class="badge new">主看板</span></h3>
+    <p>W1 / W2 / W3 三个周次 Tab 切换 · 每周自动环比上一周（涨红跌绿）· 周汇总 / 日走势 / 5渠道拆解 / 门店明细（按渠道筛选 + 上周对比）</p>
+  </a>
+
+  <a class="card" href="overview.html">
+    <h3>9月综合看板（9.1-9.13）</h3>
+    <p>整体盘面 + 5渠道拆解 + 日堆叠走势 + 门店分布</p>
+  </a>
+
+  <a class="card" href="w2.html">
+    <h3>9月第2周单周看板（9.7-9.13）</h3>
+    <p>单周数据可视化，聚焦第一完整周表现</p>
+  </a>
+
+  <a class="card" href="offline.html" download>
+    <h3>离线单文件版 <span class="badge">可保存</span></h3>
+    <p>图表库已内嵌，<b>断网也能打开</b>。建议长按/右键保存本地，或转发给同事离线查看（约 257KB）</p>
+  </a>
+
+  <div class="foot">
+    💡 看板内所有 Tab / 周次 / 渠道切换均为即时响应，无需刷新。<br>
+    📌 数据为生成时刻快照，最新数据请以日清表为准。
+  </div>
+</body>
+</html>

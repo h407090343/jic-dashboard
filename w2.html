@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>冀C区域周看板 - 9月7-13日</title>
+<style>
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#f5f7fa;color:#1f2937;margin:0;padding:24px}
+.wrap{max-width:1280px;margin:0 auto}
+h1{font-size:22px;margin:0 0 4px}
+.sub{color:#6b7280;font-size:13px;margin-bottom:18px}
+.cards{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:18px}
+.card{background:#fff;border-radius:10px;padding:16px 18px;border:1px solid #eef0f3}
+.card .lbl{color:#6b7280;font-size:12px;margin-bottom:8px}
+.card .val{font-size:22px;font-weight:600;color:#111}
+.card .delta{font-size:12px;margin-top:6px}
+.up{color:#dc2626}
+.dn{color:#16a34a}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
+.panel{background:#fff;border-radius:10px;padding:16px;border:1px solid #eef0f3}
+.panel h3{margin:0 0 12px;font-size:14px;color:#374151}
+.chart{position:relative;width:100%;height:300px}
+.bar-chart{height:520px}
+.rank{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:6px 8px;text-align:left;border-bottom:1px solid #f0f0f0}
+th{color:#6b7280;font-weight:500;font-size:12px}
+.warn{color:#dc2626;font-weight:500}
+.good{color:#16a34a;font-weight:500}
+.progress{height:8px;background:#eef0f3;border-radius:4px;overflow:hidden;margin-top:8px}
+.progress-bar{height:100%;background:linear-gradient(90deg,#3b82f6,#1d4ed8)}
+.legend{display:flex;gap:14px;font-size:12px;color:#6b7280;margin-bottom:8px;flex-wrap:wrap}
+.dot{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:middle}
+.target-bar{display:flex;justify-content:space-between;font-size:12px;color:#6b7280;margin-bottom:4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>冀C区域周看板 · 9月7日 – 9月13日</h1>
+  <div class="sub">数据来源：华北Q3季度日清表 · 24家门店 · 督导黄武杰 · 区域冀C(HBZQ3) · 更新至 9月15日</div>
+
+  <div class="cards">
+    <div class="card"><div class="lbl">本周成交额（元）</div><div class="val" id="k-amt">—</div><div class="delta" id="k-amt-d"></div></div>
+    <div class="card"><div class="lbl">本周订单数</div><div class="val" id="k-ord">—</div><div class="delta" id="k-ord-d"></div></div>
+    <div class="card"><div class="lbl">本周进店客户</div><div class="val" id="k-inc">—</div><div class="delta" id="k-inc-d"></div></div>
+    <div class="card"><div class="lbl">综合成交率</div><div class="val" id="k-rate">—</div><div class="delta" id="k-rate-d"></div></div>
+    <div class="card"><div class="lbl">客单价（元）</div><div class="val" id="k-asp">—</div><div class="delta" id="k-asp-d"></div></div>
+  </div>
+
+  <div class="grid2">
+    <div class="panel">
+      <h3>9月零售指标进度（目标 ¥5,945,546）</h3>
+      <div class="target-bar"><span>已完成 ¥<b id="p-act">—</b></span><span>剩余 ¥<b id="p-rem">—</b></span></div>
+      <div class="progress"><div class="progress-bar" id="p-bar" style="width:0%"></div></div>
+      <div style="margin-top:8px;font-size:13px"><span id="p-pct">—</span>% 完成 · 剩余 <b id="p-days">—</b> 天需日均 ¥<b id="p-rate">—</b> 才达标</div>
+    </div>
+    <div class="panel">
+      <h3>客户来源金额占比（本周 vs 上周）</h3>
+      <div class="legend">
+        <span><span class="dot" style="background:#3b82f6"></span>本周 9.7-13</span>
+        <span><span class="dot" style="background:#94a3b8"></span>上周 9.1-6</span>
+      </div>
+      <div class="chart"><canvas id="chanChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-bottom:18px">
+    <h3>日成交额走势（本周 vs 上周）</h3>
+    <div class="chart"><canvas id="trendChart"></canvas></div>
+  </div>
+
+  <div class="panel" style="margin-bottom:18px">
+    <h3>24家门店本周 vs 上周成交额对比（蓝=上周, 红=本周）</h3>
+    <div class="chart bar-chart"><canvas id="storeChart"></canvas></div>
+  </div>
+
+  <div class="rank">
+    <div class="panel">
+      <h3>本周下滑 TOP 5</h3>
+      <table id="t-decline"></table>
+    </div>
+    <div class="panel">
+      <h3>本周增长 TOP 5</h3>
+      <table id="t-growth"></table>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-bottom:18px">
+    <h3 id="t-zero-h">上周有单本周归零的门店</h3>
+    <table id="t-zero"></table>
+  </div>
+</div>
+
+<script src="chart.umd.min.js"></script>
+<script>
+const D = {"kpi": {"amt_w0": 1115466.0, "amt_w1": 835258.0, "ord_w0": 133.0, "ord_w1": 108.0, "inc_w0": 484.0, "inc_w1": 446.0, "rate_w0": 27.479338842975203, "rate_w1": 24.2152466367713, "asp_w0": 8386.962406015038, "asp_w1": 7733.87037037037}, "chan_w0": {"自然进店": 437949.0, "邀约到店": 535153.0, "异业推介": 55297.0, "老客复购转介绍": 74570.0, "线上导流": 12497.0}, "chan_w1": {"自然进店": 427318.0, "邀约到店": 319292.0, "异业推介": 23000.0, "老客复购转介绍": 65648.0, "线上导流": 0.0}, "labels_w1": ["8-31", "9-1", "9-2", "9-3", "9-4", "9-5", "9-6"], "labels_w0": ["9-7", "9-8", "9-9", "9-10", "9-11", "9-12", "9-13"], "daily_w1": [282749.0, 71979.0, 18500.0, 43999.0, 65596.0, 180298.0, 172137.0], "daily_w0": [177190.0, 75176.0, 98370.0, 84968.0, 170607.0, 304589.0, 204566.0], "store_labels": ["邢台市信都区红星美凯龙净法综", "沧州市献县蓝天家具城净眠喜眠", "河北省邯郸市邯山区渚河路53", "沧州市迎宾大道居然之家净眠、", "沧州市居然之家彩龙店净眠喜眠", "廊坊市固安县华森家具建材广场", "邢台市襄都区居然之家3楼睡得", "沧州市任丘市东星家居广场净眠", "邯郸市邯山区亚森家具城净眠法", "邯郸市涉县宏信广场-1楼睡得", "廊坊红星美凯龙净眠(NO01", "河北省邯郸市丛台区月星家居喜", "沧州市河间市红星美凯龙净眠(", "河北省沧州市泊头县林都家居净", "邢台市宁晋县居然之家净眠(N", "武安市爱佳建材城净眠(NO0", "邯郸市邯山区吉祥家具城2楼法", "邯郸市鸡泽县喜临门净眠喜眠(", "黄骅市红星美凯龙喜临门专卖店", "邯郸市南堡乡文杰建材城1楼睡", "廊坊市文安县政通道街边独立店", "廊坊市广阳区天和家居睡得香系", "邯郸市魏县净眠喜眠(NO06", "邯郸磁县朝阳北大街纪庄净眠、"], "amt_curr": [167158.0, 132589.0, 94100.0, 93977.0, 88800.0, 70588.0, 64039.0, 54000.0, 50939.0, 47100.0, 43000.0, 40150.0, 37799.0, 35900.0, 29349.0, 18600.0, 14500.0, 14178.0, 13200.0, 5500.0, 0.0, 0.0, 0.0, 0.0], "amt_prev": [37598.0, 36997.0, 39500.0, 169699.0, 91600.0, 65286.0, 43540.0, 4850.0, 33799.0, 41500.0, 2000.0, 47000.0, 22000.0, 46199.0, 27399.0, 11997.0, 0.0, 54398.0, 15299.0, 17300.0, 0.0, 0.0, 0.0, 27297.0], "amt_chg": [344.6, 258.4, 138.2, -44.6, -3.1, 8.1, 47.1, 1013.4, 50.7, 13.5, 2050.0, -14.6, 71.8, -22.3, 7.1, 55.0, 100, -73.9, -13.7, -68.2, 0, 0, 0, -100.0], "target": 5945526.75, "month_act": 1667975.0, "sep_1_6": 552509.0, "sep_7_13": 1115466.0, "progress_pct": 28.054284677131424, "day_now": 14, "days_in_month": 30, "top_decline": [["沧州市迎宾大道居然之家净眠、法诗曼(NO05215)", 93977.0, 169699.0, -44.6], ["邯郸市鸡泽县喜临门净眠喜眠(NO07314)", 14178.0, 54398.0, -73.9], ["邯郸磁县朝阳北大街纪庄净眠、法诗曼、喜眠(NO06598)", 0.0, 27297.0, -100.0], ["邯郸市南堡乡文杰建材城1楼睡得香专卖店FXD(FX000236)", 5500.0, 17300.0, -68.2], ["河北省沧州市泊头县林都家居净眠(NO06996)", 35900.0, 46199.0, -22.3]], "top_growth": [["邢台市信都区红星美凯龙净法综合店(NO250797)", 167158.0, 37598.0, 344.6], ["沧州市献县蓝天家具城净眠喜眠(NO06976)", 132589.0, 36997.0, 258.4], ["河北省邯郸市邯山区渚河路531号东信家园2楼(NO06049)", 94100.0, 39500.0, 138.2], ["沧州市任丘市东星家居广场净眠喜眠(NO07197)", 54000.0, 4850.0, 1013.4], ["廊坊红星美凯龙净眠(NO01648)", 43000.0, 2000.0, 2050.0]], "zero_stores": ["邯郸磁县朝阳北大街纪庄净眠、法诗曼、喜眠(NO06598)"], "c0": 484.0, "o0": 133.0};
+function fmt(n){return Math.round(n).toLocaleString();}
+function pct(n){return (n*100).toFixed(1)+'%';}
+
+// KPI
+$ = id => document.getElementById(id);
+$('k-amt').textContent = fmt(D.kpi.amt_w0);
+$('k-amt-d').innerHTML = '上周 ¥' + fmt(D.kpi.amt_w1) + ' · 环比 <span class="' + (D.kpi.amt_w0>=D.kpi.amt_w1?'up':'dn') + '">' + ((D.kpi.amt_w0-D.kpi.amt_w1)/D.kpi.amt_w1*100).toFixed(1) + '%</span>';
+$('k-ord').textContent = fmt(D.kpi.ord_w0);
+$('k-ord-d').innerHTML = '上周 ' + fmt(D.kpi.ord_w1) + ' 单 · 环比 <span class="' + (D.kpi.ord_w0>=D.kpi.ord_w1?'up':'dn') + '">' + ((D.kpi.ord_w0-D.kpi.ord_w1)/D.kpi.ord_w1*100).toFixed(1) + '%</span>';
+$('k-inc').textContent = fmt(D.kpi.inc_w0);
+$('k-inc-d').innerHTML = '上周 ' + fmt(D.kpi.inc_w1) + ' 人 · 环比 <span class="' + (D.kpi.inc_w0>=D.kpi.inc_w1?'up':'dn') + '">' + ((D.kpi.inc_w0-D.kpi.inc_w1)/D.kpi.inc_w1*100).toFixed(1) + '%</span>';
+$('k-rate').textContent = D.kpi.rate_w0.toFixed(1) + '%';
+$('k-rate-d').innerHTML = '上周 ' + D.kpi.rate_w1.toFixed(1) + '% · ' + ((D.kpi.rate_w0-D.kpi.rate_w1)>=0?'<span class="up">+':'<span class="dn">') + (D.kpi.rate_w0-D.kpi.rate_w1).toFixed(1) + 'pct</span>';
+$('k-asp').textContent = '¥' + fmt(D.kpi.asp_w0);
+$('k-asp-d').innerHTML = '上周 ¥' + fmt(D.kpi.asp_w1) + ' · 环比 <span class="' + (D.kpi.asp_w0>=D.kpi.asp_w1?'up':'dn') + '">' + ((D.kpi.asp_w0-D.kpi.asp_w1)/D.kpi.asp_w1*100).toFixed(1) + '%</span>';
+
+// 进度
+$('p-act').textContent = fmt(D.month_act);
+$('p-rem').textContent = fmt(D.target-D.month_act);
+$('p-pct').textContent = D.progress_pct.toFixed(1);
+$('p-bar').style.width = Math.min(100, D.progress_pct).toFixed(1) + '%';
+const left = D.days_in_month - D.day_now + 1;
+const need = (D.target - D.month_act) / left;
+$('p-days').textContent = left;
+$('p-rate').textContent = fmt(need);
+
+// 渠道图
+const chanLabels = ['自然进店','邀约到店','异业推介','老客复购转介绍','线上导流'];
+new Chart(document.getElementById('chanChart'), {
+  type: 'bar',
+  data: { labels: chanLabels, datasets: [
+    { label: '本周', data: chanLabels.map(l=>D.chan_w0[l]), backgroundColor: '#3b82f6' },
+    { label: '上周', data: chanLabels.map(l=>D.chan_w1[l]), backgroundColor: '#cbd5e1' }
+  ]},
+  options: { indexAxis:'y', responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: c=>c.dataset.label+': ¥'+fmt(c.raw) }}},
+    scales:{ x:{ ticks:{ callback: v => (v/10000).toFixed(0)+'万' } } }
+  }
+});
+
+// 日趋势
+new Chart(document.getElementById('trendChart'), {
+  type: 'line',
+  data: { labels: D.labels_w1.concat(D.labels_w0),
+    datasets: [
+      { label:'上周 9.1-6', data: D.daily_w1.concat(Array(D.daily_w0.length).fill(null)),
+        borderColor:'#94a3b8', backgroundColor:'transparent', tension:0.3, spanGaps:false },
+      { label:'本周 9.7-13', data: Array(D.daily_w1.length).fill(null).concat(D.daily_w0),
+        borderColor:'#dc2626', backgroundColor:'rgba(220,38,38,0.08)', fill:true, tension:0.3 }
+    ]
+  },
+  options: { responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: c=>c.dataset.label+': ¥'+fmt(c.raw) }}},
+    scales:{ y:{ ticks:{ callback: v => (v/10000).toFixed(0)+'万' } } }
+  }
+});
+
+// 门店对比
+new Chart(document.getElementById('storeChart'), {
+  type: 'bar',
+  data: { labels: D.store_labels, datasets: [
+    { label:'上周', data: D.amt_prev, backgroundColor:'#cbd5e1' },
+    { label:'本周', data: D.amt_curr, backgroundColor:'#dc2626' }
+  ]},
+  options: { indexAxis:'y', responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: c=>c.dataset.label+': ¥'+fmt(c.raw) }}},
+    scales:{ x:{ ticks:{ callback: v => (v/10000).toFixed(0)+'万' } },
+            y:{ ticks:{ font:{size:10}, autoSkip:false } } }
+  }
+});
+
+// 榜单
+function row(arr,cls){ return '<tr><td>'+arr[0]+'</td><td>¥'+fmt(arr[1])+'</td><td>¥'+fmt(arr[2])+'</td><td class="'+cls+'">'+(arr[3]>=0?'+':'')+arr[3]+'%</td></tr>'; }
+$('t-decline').innerHTML = '<tr><th>门店</th><th>本周</th><th>上周</th><th>环比</th></tr>' +
+  D.top_decline.map(x=>row([x[0],x[1],x[2],x[3]],'dn')).join('');
+$('t-growth').innerHTML = '<tr><th>门店</th><th>本周</th><th>上周</th><th>环比</th></tr>' +
+  D.top_growth.map(x=>row([x[0],x[1],x[2],x[3]],'up')).join('');
+$('t-zero').innerHTML = '<tr><th>门店</th><th>本周成交</th><th>上周成交</th></tr>' +
+  (D.zero_stores.length? D.zero_stores.map(s=>{
+    const c=D.amt_curr[D.store_labels.findIndex(l=>s.startsWith(l))];
+    const p=D.amt_prev[D.store_labels.findIndex(l=>s.startsWith(l))];
+    return '<tr><td>'+s+'</td><td class="warn">¥0</td><td>¥'+fmt(p)+'</td></tr>';
+  }).join('') : '<tr><td colspan="3" style="color:#16a34a;text-align:center;padding:14px">本周无归零门店</td></tr>');
+</script>
+</body>
+</html>
